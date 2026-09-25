@@ -38,6 +38,7 @@ jobs:
           URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/?v=${GITHUB_RUN_ID}"
           google-chrome --headless=new --disable-gpu --no-sandbox \
             --no-pdf-header-footer --virtual-time-budget=10000 \
+            --disable-background-networking --log-level=3 \
             --print-to-pdf="$FILE" "$URL"
           ls -l "$FILE"
 
