@@ -1,0 +1,66 @@
+name: Save CV as PDF
+
+# Runs after GitHub Pages' built-in "pages-build-deployment" finishes
+# and uploads a timestamped PDF of the live site to Google Drive.
+#
+# Required repository secrets:
+#   GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET, GDRIVE_REFRESH_TOKEN  (OAuth, "drive" scope)
+#   GDRIVE_FOLDER_ID  (the folder in the Drive URL: drive.google.com/drive/folders/<ID>)
+on:
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: save-cv-pdf
+  cancel-in-progress: true
+
+jobs:
+  pdf:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for the live site to update
+        run: sleep 30
+
+      - name: Print live site to PDF
+        run: |
+          FILE="[name]__CV__$(TZ=Europe/Berlin date +%Y-%m-%d_%H-%M).pdf"
+          echo "FILE=$FILE" >> "$GITHUB_ENV"
+          URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/?v=${GITHUB_RUN_ID}"
+          google-chrome --headless=new --disable-gpu --no-sandbox \
+            --no-pdf-header-footer --virtual-time-budget=10000 \
+            --print-to-pdf="$FILE" "$URL"
+          ls -l "$FILE"
+
+      - name: Upload PDF to Google Drive
+        env:
+          CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+          FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          set -o pipefail
+          for v in CLIENT_ID CLIENT_SECRET REFRESH_TOKEN FOLDER_ID; do
+            [ -n "${!v}" ] || { echo "::error::Missing secret GDRIVE_$v"; exit 1; }
+          done
+
+          TOKEN=$(curl -sS --fail-with-body https://oauth2.googleapis.com/token \
+            -d client_id="$CLIENT_ID" -d client_secret="$CLIENT_SECRET" \
+            -d refresh_token="$REFRESH_TOKEN" -d grant_type=refresh_token | jq -r .access_token)
+          echo "::add-mask::$TOKEN"
+
+          jq -n --arg name "$FILE" --arg folder "$FOLDER_ID" \
+            '{name: $name, parents: [$folder], mimeType: "application/pdf"}' > meta.json
+
+          curl -sS --fail-with-body -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -F "metadata=@meta.json;type=application/json;charset=UTF-8" \
+            -F "file=@$FILE;type=application/pdf" \
+            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,name,webViewLink"
