@@ -56,7 +56,7 @@
   .skillgroup li { margin-bottom:.3mm; }
 
   /* ---------- jobs ---------- */
-  .job { margin-bottom:2mm; }
+  .job { margin: bottom 20px; }
   .job-head, .parent { background:var(--tint); color:var(--navy); padding:1.8mm 3.5mm; border-radius:1.2mm;
                        display:flex; justify-content:space-between; align-items:baseline; gap:4mm; margin-bottom:1mm; }
   .parent { margin-bottom:2.6mm; font-weight:700; }
@@ -66,11 +66,12 @@
   .label { font-size:7.2pt; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:700; margin:.8mm 0 .4mm; }
   .job li { margin-bottom:.5mm; }
   .sub { border-left:.6mm solid var(--rule); padding-left:3.5mm; margin-bottom:5mm; margin-top:4mm}
-  .sub .job { margin-bottom:0; }
+  .sub .job { margin: bottom 20px; }
   .sub .job-title { display:block; }
-  .culture-grid { display:grid; grid-template-columns:105mm 1fr; gap: 8mm}
-  .culturegroup { margin-bottom:1.6mm; }
-  .culturegroup li { margin-bottom:.4mm; }
+  .preferences-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 5mm}
+  .culture-grid, .role-grid { display:grid; grid-template-columns:105mm 1fr; gap: 8mm}
+  .culturegroup, .rolegroup { margin-bottom:1.6mm; }
+  .culturegroup li, .rolegroup li { margin-bottom:.4mm; }
   .sheet > :last-child { margin-bottom:0; }
   .sheet > .sub:last-child, .sheet .job:last-child { margin-bottom:0; }
 </style>
@@ -120,27 +121,66 @@
       <li>A clear <b>customer-centric, long-term product vision</b> that all decisions flow from - rather than a business / sales strategy driving everything.</li>
     </ul>
   </section>
-  <section class="culture">
-    <h2>Company Culture Preferences</h2>
-    <div class="culture-grid">
-      <div class="culturegroup">
-        <!-- <h3>Communication Style</h3> -->
+ <section class="preferences">
+  <div class="preferences-grid">
+    <div class="culturegroup">
+    <h2>Culture Preferences</h2>
         <ul>
-        <li><b>Eye-level & Direct:</b> Zero office politics, zero egos, no 4D chess.</li>
-        <li><b>Transparent &amp; Clear:</b> Open communication about decisions &amp; outcomes</li>
-        <li><b>Collaborative:</b> Hearing everyone out before decisions (within reason) are made</li>
-        <li><b>Curious & inquisitive:</b> Always looking for better ways to work</li>
+          <li><b>Eye-level & Direct:</b> Zero office politics, zero egos, no 4D chess.</li>
+          <li><b>Transparent &amp; Clear:</b> Open communication about decisions &amp; outcomes</li>
+          <li><b>Collaborative:</b> Hearing everyone out before decisions (within reason) are made</li>
+          <li><b>Curious & inquisitive:</b> Always looking for better ways to work</li>
+          <li><b>Inclusive:</b> Good ideas can come from anywhere regardless of title</li>
+          <li><b>Accountable:</b> Clear ownership of decisions and outcomes</li>
+          <li><b>Experimental:</b> Willingness to try new tools/approaches (e.g. PM prototyping / coding)</li>
+          <li><b>Adaptable:</b> Open to changing processes when better methods emerge</li>
         </ul>
       </div>
-      <div class="culturegroup">
-        <!-- <h3>Values</h3> -->
+    <div class="culturegroup">
+    <h2>Role Preferences</h2>
         <ul>
-        <li><b>Inclusive:</b> Good ideas can come from anywhere regardless of title</li>
-        <li><b>Accountable:</b> Clear ownership of decisions and outcomes</li>
-        <li><b>Experimental:</b> Willingness to try new tools/approaches (e.g. PM prototyping / coding)</li>
-        <li><b>Adaptable:</b> Open to changing processes when better methods emerge</li>
+          <li>Yes to Owning product strategy & roadmap within clear business guardrails.</li>
+          <li>Yes to Laser-focused, cohort-first, iterative development.</li>
+          <li>Yes to Clear strategy ("who & why") with pragmatic, lightweight process.</li>
+          <li>Yes to Working with meaningful, understood metrics tied to business outcomes.</li>
+          <li>No to Legacy, risk-averse, slow-moving technical/cultural environments.</li>
+          <li>No to Manual, repetitive administrative tasks.</li>
+          <li>No to Building large pre-defined feature lists without validation (Waterfall).</li>
+          <li>No to Primary responsibility for marketing (GTM, positioning) or pricing.</li>
         </ul>
+  </div>
+      </section>
+ <section class="skills">
+  <h2>Skills &amp; Tools</h2>
+  <div class="skills2">
+    <div>
+      <div class="skillgroup">
+        <ul>
+          <li><b>CI/CD:</b> Gitlab, Github, Azure DevOps.</li>
+          <li><b>Observability:</b> Datadog, Grafana, Dynatrace, NewRelic.</li>
+          <li><b>Other:</b> Temporal, Docusaurus, Firebase, Optimizely.</li>
+        </ul>
+      </div>
     </div>
+    <div>
+      <div class="skillgroup">
+        <ul>
+          <li><b>Product Mgt.:</b> Atlassian, Notion, Trello, Asana, Linear.</li>
+          <li><b>Automation:</b> n8n, Microsoft Power Automate.</li>
+          <li><b>AI Tools:</b> Claude Code.</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="skillgroup">
+        <ul>
+          <li><b>Analytics</b> Tableau, Google Analytics, Posthog.</li>
+          <li><b>Consumer Research:</b> Statista, Euromonitor, Mintel.</li>
+          <li><b>QA/UAT:</b> Perfecto &amp; Octane, Cypress, Postman.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
   </section>
 </div>
 <aside class="p1-side">
@@ -251,38 +291,7 @@
 <li><b>Successfully developed &amp; trained junior and senior client employees,</b> shaping their roles &amp; responsibilities, subject matter understanding as well as career development</li>
 <li><b>Securing long-lasting clients (3+ years avg.)</b> by cultivating strong relationships allowing for fast iterations and identifying fitting cross- &amp; up-selling opportunities</li>
 </ul></div>
-  <section class="skills">
-  <h2>Skills &amp; Tools</h2>
-  <div class="skills2">
-    <div>
-      <div class="skillgroup">
-        <ul>
-          <li><b>CI/CD:</b> Gitlab, Github, Azure DevOps.</li>
-          <li><b>Observability:</b> Datadog, Grafana, Dynatrace, NewRelic.</li>
-          <li><b>Other:</b> Temporal, Docusaurus, Firebase, Optimizely.</li>
-        </ul>
-      </div>
-    </div>
-    <div>
-      <div class="skillgroup">
-        <ul>
-          <li><b>Product Mgt.:</b> Atlassian, Notion, Trello, Asana, Linear.</li>
-          <li><b>Automation:</b> n8n, Microsoft Power Automate.</li>
-          <li><b>AI Tools:</b> Claude Code.</li>
-        </ul>
-      </div>
-    </div>
-    <div>
-      <div class="skillgroup">
-        <ul>
-          <li><b>Analytics</b> Tableau, Google Analytics, Posthog.</li>
-          <li><b>Consumer Research:</b> Statista, Euromonitor, Mintel.</li>
-          <li><b>QA/UAT:</b> Perfecto &amp; Octane, Cypress, Postman.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  </section>
+
 </div>
 </div>
 </body>
