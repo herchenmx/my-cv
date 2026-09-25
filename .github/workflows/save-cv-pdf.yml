@@ -11,8 +11,6 @@ on:
     workflows: ["pages-build-deployment"]
     types: [completed]
   workflow_dispatch:
-  push:  # TEMP: test run from this branch; remove before merging
-    branches: [claude/determined-wright-2nm6i2]
 
 permissions:
   contents: read
@@ -24,7 +22,7 @@ concurrency:
 jobs:
   pdf:
     if: >
-      github.event_name == 'workflow_dispatch' || github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
@@ -48,6 +46,7 @@ jobs:
           REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
           FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |
+          set -o pipefail
           for v in CLIENT_ID CLIENT_SECRET REFRESH_TOKEN FOLDER_ID; do
             [ -n "${!v}" ] || { echo "::error::Missing secret GDRIVE_$v"; exit 1; }
           done
