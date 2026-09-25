@@ -31,7 +31,9 @@ jobs:
 
       - name: Print live site to PDF
         run: |
-          FILE="[name]__CV__$(TZ=Europe/Berlin date +%Y-%m-%d_%H-%M).pdf"
+          # Name is stored reversed + base64 so it isn't plain text in the repo.
+          NAME=$(echo 'aGNhYm5laGNyZUhhaXJhTQ==' | base64 -d | rev)
+          FILE="${NAME}__CV__$(TZ=Europe/Berlin date +%Y-%m-%d_%H-%M).pdf"
           echo "FILE=$FILE" >> "$GITHUB_ENV"
           URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/?v=${GITHUB_RUN_ID}"
           google-chrome --headless=new --disable-gpu --no-sandbox \
