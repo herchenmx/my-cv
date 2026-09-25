@@ -11,6 +11,8 @@ on:
     workflows: ["pages-build-deployment"]
     types: [completed]
   workflow_dispatch:
+  push:  # TEMP: test run from this branch; remove before merging
+    branches: [claude/determined-wright-2nm6i2]
 
 permissions:
   contents: read
