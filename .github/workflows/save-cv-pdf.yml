@@ -1,6 +1,7 @@
 name: Save CV as PDF
 
-# Runs after GitHub Pages' built-in "pages-build-deployment" finishes.
+# Runs after GitHub Pages' built-in "pages-build-deployment" finishes
+# and saves a timestamped PDF of the live site to the "pdfs" branch.
 on:
   workflow_run:
     workflows: ["pages-build-deployment"]
@@ -16,32 +17,43 @@ concurrency:
 
 jobs:
   pdf:
-    # Only after a successful deploy, and not for deploys caused by this
-    # workflow's own PDF commit (prevents an endless loop).
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_commit.author.name != 'github-actions[bot]')
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
+      # PDFs live on a separate "pdfs" branch. Pages doesn't deploy from it,
+      # so committing a PDF never triggers a new deployment.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Switch to pdfs branch
+        run: |
+          if git ls-remote --exit-code --heads origin pdfs >/dev/null; then
+            git checkout pdfs
+          else
+            git checkout --orphan pdfs
+            git rm -rfq .
+          fi
 
       - name: Wait for the live site to update
         run: sleep 30
 
       - name: Print live site to PDF
         run: |
+          FILE="MariaHerchenbach__CV__$(TZ=Europe/Berlin date +%Y-%m-%d_%H-%M).pdf"
+          echo "FILE=$FILE" >> "$GITHUB_ENV"
           URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/?v=${GITHUB_RUN_ID}"
           google-chrome --headless=new --disable-gpu --no-sandbox \
             --no-pdf-header-footer --virtual-time-budget=10000 \
-            --print-to-pdf=cv.pdf "$URL"
-          ls -l cv.pdf
+            --print-to-pdf="$FILE" "$URL"
+          ls -l "$FILE"
 
       - name: Commit PDF
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add cv.pdf
-          git diff --cached --quiet && { echo "No changes"; exit 0; }
-          git commit -m "Update cv.pdf from live site"
-          git push
+          git add "$FILE"
+          git commit -m "Add $FILE"
+          git push origin pdfs
