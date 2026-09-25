@@ -1,7 +1,11 @@
 name: Save CV as PDF
 
 # Runs after GitHub Pages' built-in "pages-build-deployment" finishes
-# and saves a timestamped PDF of the live site to the "pdfs" branch.
+# and uploads a timestamped PDF of the live site to Google Drive.
+#
+# Required repository secrets:
+#   GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET, GDRIVE_REFRESH_TOKEN  (OAuth, "drive" scope)
+#   GDRIVE_FOLDER_ID  (the folder in the Drive URL: drive.google.com/drive/folders/<ID>)
 on:
   workflow_run:
     workflows: ["pages-build-deployment"]
@@ -9,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: save-cv-pdf
@@ -22,21 +26,6 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      # PDFs live on a separate "pdfs" branch. Pages doesn't deploy from it,
-      # so committing a PDF never triggers a new deployment.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Switch to pdfs branch
-        run: |
-          if git ls-remote --exit-code --heads origin pdfs >/dev/null; then
-            git checkout pdfs
-          else
-            git checkout --orphan pdfs
-            git rm -rfq .
-          fi
-
       - name: Wait for the live site to update
         run: sleep 30
 
@@ -50,10 +39,27 @@ jobs:
             --print-to-pdf="$FILE" "$URL"
           ls -l "$FILE"
 
-      - name: Commit PDF
+      - name: Upload PDF to Google Drive
+        env:
+          CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+          FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$FILE"
-          git commit -m "Add $FILE"
-          git push origin pdfs
+          for v in CLIENT_ID CLIENT_SECRET REFRESH_TOKEN FOLDER_ID; do
+            [ -n "${!v}" ] || { echo "::error::Missing secret GDRIVE_$v"; exit 1; }
+          done
+
+          TOKEN=$(curl -sS --fail-with-body https://oauth2.googleapis.com/token \
+            -d client_id="$CLIENT_ID" -d client_secret="$CLIENT_SECRET" \
+            -d refresh_token="$REFRESH_TOKEN" -d grant_type=refresh_token | jq -r .access_token)
+          echo "::add-mask::$TOKEN"
+
+          jq -n --arg name "$FILE" --arg folder "$FOLDER_ID" \
+            '{name: $name, parents: [$folder], mimeType: "application/pdf"}' > meta.json
+
+          curl -sS --fail-with-body -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -F "metadata=@meta.json;type=application/json;charset=UTF-8" \
+            -F "file=@$FILE;type=application/pdf" \
+            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,name,webViewLink"
